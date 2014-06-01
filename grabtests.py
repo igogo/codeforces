@@ -1,14 +1,4 @@
 #!/usr/bin/env python
-'''
-Usage:
-Run this program in one of following ways
-./grabtests.py http://codeforces.com/contest/356/problem/A
-./grabtests.py http://codeforces.com/contest/356
-./grabtests.py gym/356 (oops this needs cookies and thus doesn't work)
-./grabtests.py 356
-'''
-
-# FIXME: this doesn't work with gym because the login is required for that...
 
 import BeautifulSoup
 import urllib2, socket
