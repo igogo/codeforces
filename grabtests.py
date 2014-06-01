@@ -13,6 +13,7 @@ Run this program in one of following ways
 import BeautifulSoup
 import urllib2, socket
 import sys, re, os
+from htmlentitydefs import entitydefs
 
 codeforces_domain = 'codeforces.com'
 tests_dir = 'tests'
@@ -56,13 +57,16 @@ def html2plaintext(tag):
     result = ''
     for c in tag.contents:
         if isinstance(c, BeautifulSoup.NavigableString):
-            result += str(c)
+            result += replace_html_specials(str(c))
         if isinstance(c, BeautifulSoup.Tag):
             if c.name == 'br':
                 result += '\n'
             else:
                 raise Exception('unknown tag inside test case found: ' + c.name)
     return result
+
+def replace_html_specials(s):
+    return re.sub(r'&(\w+);', lambda x: entitydefs[x.group(1)], s)
 
 def download_problem(problem):
     print '=== problem ' + extract_letter(problem) + ' ==='
