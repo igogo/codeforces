@@ -14,6 +14,7 @@ import BeautifulSoup
 import urllib2, socket
 import sys, re, os
 from htmlentitydefs import entitydefs
+import argparse
 
 codeforces_domain = 'codeforces.com'
 tests_dir = 'tests'
@@ -106,10 +107,19 @@ def extract_letter(problem):
         raise Exception('failed to extract problem letter from its address')
 
 if __name__ == '__main__':
-    if len(sys.argv) > 2:
-        raise Exception('Supply URL or contest number')
-    if len(sys.argv) == 2:
-        addr = get_contest_from_arg(sys.argv[1])
+    parser = argparse.ArgumentParser(description='Download pretests from codeforces website',
+                                     formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('contest', type=str, nargs='?',
+                        help=('which contest to download\n'
+                              'examples:\n'
+                              '\t416\n'
+                              '\tcontest/416\n'
+                              '\thttp://codeforces.com/contest/416/problem/A\n'
+                              'by default, the last contest is downloaded')
+                       )
+    args = parser.parse_args()
+    if args.contest is not None:
+        addr = get_contest_from_arg(args.contest)
     else:
         addr = get_most_recent_contest_url()
     for problem in get_problems(addr):
