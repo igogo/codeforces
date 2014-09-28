@@ -1,5 +1,5 @@
 
-all: A B C D E F
+all: A B C D E
 
 tester.o: tester.cpp
 	g++ -c -std=c++11 -g -O2 $^ -o $@

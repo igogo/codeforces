@@ -15,6 +15,8 @@
 #include <array>
 #include <queue>
 
+// ############ TASK $$PROBLEM_LETTER$$ ##################
+
 using namespace std;
 
 typedef vector<int> vi;
@@ -37,11 +39,9 @@ void solve()
 
 
 
-
-
 #ifdef ONLINE_JUDGE
 int main() { solve(); return 0; }
 #else
 void perform_testing(void (*solve)(), string problem, int itest);
-int main() { perform_testing(solve, "$$PROBLEM$$", -1); return 0; }
+int main() { perform_testing(solve, "$$PROBLEM_LETTER$$", -1); return 0; }
 #endif // ONLINE_JUDGE

@@ -17,9 +17,5 @@ Do
 Eo
 Fo
 *.o
-*.config
-*.user
-*creator*
-*.files
 tests
 .*.swp
