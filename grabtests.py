@@ -3,6 +3,7 @@
 from htmlentitydefs import entitydefs
 import argparse
 import BeautifulSoup
+import os
 import re
 import socket
 import urllib2
@@ -100,6 +101,8 @@ def copy_substitute(src, dst, **substitutions):
         data = stream.read()
     for key, value in substitutions.iteritems():
         data = data.replace("$$" + key + "$$", value)
+    if os.path.isdir(dst):
+        dst = os.path.join(dst, os.path.basename(src))
     with open(dst, "w") as stream:
         stream.write(data)
 
@@ -142,7 +145,8 @@ def main(contest, base_dir):
         contest_id = get_most_recent_contest_url()
 
     # run this ASAP to verify whether contest_id is valid
-    problem_letters = get_problems(contest_id)
+    problems = get_problems(contest_id)
+    problem_letters = [x.split("/")[-1] for x in problems]
 
     script_dir = path.path(__file__).dirname().abspath()
     contest_slug = contest_id.strip("/").replace("/", "_")
@@ -153,7 +157,7 @@ def main(contest, base_dir):
     with open(script_dir / "template.cpp") as stream:
         solution_template = stream.read()
 
-    for problem in problem_letters:
+    for problem in problems:
         tests = download_problem(problem)
         save(contest_dir, extract_letter(problem), tests, solution_template)
 
@@ -165,7 +169,11 @@ def main(contest, base_dir):
         )
 
     for aux_file in "Makefile", "tester.cpp", "custom_tests.cpp":
-        (script_dir / aux_file).copy(contest_dir)
+        copy_substitute(
+            script_dir / aux_file,
+            contest_dir,
+            PROBLEM_LETTERS=" ".join(problem_letters),
+        )
 
     print
     print "ALL DONE"

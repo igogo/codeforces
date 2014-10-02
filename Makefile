@@ -1,5 +1,5 @@
 
-all: A B C D E
+all: $$PROBLEM_LETTERS$$
 
 tester.o: tester.cpp
 	g++ -c -std=c++11 -g -O2 $^ -o $@
@@ -14,6 +14,6 @@ custom_tests.o: custom_tests.cpp
 	g++ -pipe -std=c++11 -O3 -g $^ -o $@
 
 clean:
-	rm A B C D E F *.o
+	rm $$PROBLEM_LETTERS$$ *.o
 
 
