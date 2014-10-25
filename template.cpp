@@ -31,8 +31,16 @@ typedef long long ll;
 #define REP(i,n) for(int (i) = 0; (i) < (n); (i)++)
 #define FOR(i, st, en) for(int i=(st); i<(int)(en); i++)
 #define CR(value) cout << value << endl; return
+#define RV(v) FV(i,v) cin >> v[i];
+#define DRV(v, n) vi (v)(n); RV((v));
 
-void do_nothing() {}
+ll mabs(ll x) {
+    return (x > 0) ? x : -x;
+}
+
+ll modulo(ll x, ll y) {
+    return ((x % y) + y) % y;
+}
 
 void solve()
 {
