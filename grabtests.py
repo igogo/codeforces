@@ -138,7 +138,7 @@ def extract_letter(problem):
         raise RuntimeError('failed to extract problem letter from its address')
 
 
-def main(contest, base_dir):
+def main(contest, base_dir, force):
     if contest is not None:
         contest_id = get_contest_from_arg(contest)
     else:
@@ -158,7 +158,17 @@ def main(contest, base_dir):
         solution_template = stream.read()
 
     for problem in problems:
-        tests = download_problem(problem)
+        try:
+            tests = download_problem(problem)
+        except Exception, e:
+            print "Exception (%s) raised during test downloding for problem '%s'" % (e, problem)
+            if force:
+                print "Going to use empty tests"
+                tests = []
+            else:
+                print "Exiting. Use --force to ignore errors"
+                return
+
         save(contest_dir, extract_letter(problem), tests, solution_template)
 
     for qtfile in (script_dir / "qtcreator").glob("CONTEST*"):
@@ -185,6 +195,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Download pretests from codeforces website',
         formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="ignore any exception occured during test downloading")
     parser.add_argument(
         "--base-dir",
         default=str(path.path(__file__).dirname().abspath().parent / "contests"),
