@@ -1,9 +1,6 @@
-A.cpp
-B.cpp
-C.cpp
+{% for target in targets %}
+{{ target }}.cpp
+{% endfor %}
 custom_tests.cpp
-D.cpp
-E.cpp
-F.cpp
 template.cpp
 tester.cpp

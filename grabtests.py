@@ -8,6 +8,8 @@ import re
 import socket
 import urllib2
 
+from django.template import Template, Context
+from django.conf import settings
 import path
 
 
@@ -96,11 +98,10 @@ def download_problem(problem):
     return results
 
 
-def copy_substitute(src, dst, **substitutions):
+def copy_substitute(src, dst, **context):
     with open(src) as stream:
         data = stream.read()
-    for key, value in substitutions.iteritems():
-        data = data.replace("$$" + key + "$$", value)
+    data = Template(data).render(Context(context))
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
     with open(dst, "w") as stream:
@@ -139,6 +140,8 @@ def extract_letter(problem):
 
 
 def main(contest, base_dir, force):
+    settings.configure()
+
     if contest is not None:
         contest_id = get_contest_from_arg(contest)
     else:
@@ -175,13 +178,15 @@ def main(contest, base_dir, force):
         copy_substitute(
             qtfile,
             contest_dir / qtfile.basename().replace("CONTEST", contest_slug),
-            ROOT_DIR=contest_dir,
+            root_dir=contest_dir,
+            targets=problem_letters,
         )
 
     for aux_file in "Makefile", "tester.cpp", "custom_tests.cpp":
         copy_substitute(
             script_dir / aux_file,
             contest_dir,
+            targets=problem_letters,
             PROBLEM_LETTERS=" ".join(problem_letters),
         )
 
