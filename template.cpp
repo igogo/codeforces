@@ -1,19 +1,4 @@
-#include <vector>
-#include <string>
-#include <set>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <map>
-#include <cstring>
-#include <climits>
-#include <deque>
-#include <cmath>
-#include <cstdio>
-#include <limits>
-#include <tuple>
-#include <array>
-#include <queue>
+#include <bits/stdc++.h>
 
 // ############ TASK $$PROBLEM_LETTER$$ ##################
 
@@ -34,10 +19,6 @@ typedef long long ll;
 #define RV(v) FV(i,v) cin >> v[i];
 #define DRV(v, n) vi (v)(n); RV((v));
 
-ll mabs(ll x) {
-    return (x > 0) ? x : -x;
-}
-
 ll modulo(ll x, ll y) {
     return ((x % y) + y) % y;
 }
@@ -48,7 +29,7 @@ void solve() {
 
 
 #ifdef ONLINE_JUDGE
-int main() { solve(); return 0; }
+int main() { ios_base::sync_with_stdio(0); solve(); return 0; }
 #else
 void perform_testing(void (*solve)(), string problem, int itest);
 int main() { perform_testing(solve, "$$PROBLEM_LETTER$$", -1); return 0; }
