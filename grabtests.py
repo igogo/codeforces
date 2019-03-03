@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 
-from htmlentitydefs import entitydefs
+from html.entities import entitydefs
 import argparse
-import BeautifulSoup
+import bs4 as BeautifulSoup
 import os
 import re
 import socket
-import urllib2
-
-from django.template import Template, Context
-from django.conf import settings
+import urllib.request, urllib.error, urllib.parse
 import path
+
+import jinja2
 
 
 codeforces_domain = 'codeforces.com'
@@ -39,13 +38,16 @@ def get_contest_from_arg(arg):
 
 def download(path):
     ''' codeforces.com sometimes resolves to ipv6 address which doesn't work, so we'll force manually '''
-    host = socket.gethostbyname(codeforces_domain)
-    request = urllib2.Request('http://' + host + path, headers={'Host': codeforces_domain})
-    return urllib2.urlopen(request).read()
+    host = codeforces_domain
+    url = 'http://' + host + path
+    response = urllib.request.urlopen(url)
+    data = response.read()      # a `bytes` object
+    text = data.decode('utf-8')
+    return text
 
 
 def get_most_recent_contest_url():
-    soup = BeautifulSoup.BeautifulSoup(download('/contests'))
+    soup = BeautifulSoup.BeautifulSoup(download('/contests'), features="html.parser")
     for contest in soup.findAll(lambda tag: 'data-contestid' in dict(tag.attrs)):
         links = [a['href'] for a in contest.findAll('a') if re.search(r'/contest/[0-9]+$', a['href'])]
         if len(links) == 1:
@@ -54,14 +56,14 @@ def get_most_recent_contest_url():
 
 
 def get_problems(path):
-    print '=== downloading ' + path + ' ==='
+    print('=== downloading ' + path + ' ===')
     soup = BeautifulSoup.BeautifulSoup(download(path))
     problemsbox = soup.findAll('table', 'problems')
     assert len(problemsbox) == 1, 'couldn\'t locate a list of links to problems'
     problemsbox = problemsbox[0]
     problems = sorted(set(a['href'] for a in problemsbox.findAll('a') if '/problem/' in a['href']))
     assert len(problems) >= 1, 'couldn\'t locate any problems'
-    print 'Found', len(problems), 'problems'
+    print('Found', len(problems), 'problems')
     return problems
 
 
@@ -83,7 +85,7 @@ def replace_html_specials(s):
 
 
 def download_problem(problem):
-    print '=== problem ' + extract_letter(problem) + ' ==='
+    print('=== problem ' + extract_letter(problem) + ' ===')
     soup = BeautifulSoup.BeautifulSoup(download(problem))
     tests = soup.findAll('div', 'sample-test')
     assert len(tests) == 1, 'sample-tests div was expected to be single'
@@ -91,7 +93,7 @@ def download_problem(problem):
     inputs = [i.pre for i in tests.findAll('div', 'input')]
     outputs = [o.pre for o in tests.findAll('div', 'output')]
     assert len(inputs) == len(outputs) >= 1, 'error in parsing inputs and outputs'
-    print 'Found', len(inputs), 'tests'
+    print('Found', len(inputs), 'tests')
     results = []
     for i, o in zip(inputs, outputs):
         results.append((html2plaintext(i), html2plaintext(o)))
@@ -101,7 +103,7 @@ def download_problem(problem):
 def copy_substitute(src, dst, **context):
     with open(src) as stream:
         data = stream.read()
-    data = Template(data).render(Context(context))
+    data = jinja2.Template(data).render(**context)
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
     with open(dst, "w") as stream:
@@ -109,9 +111,9 @@ def copy_substitute(src, dst, **context):
 
 
 def save(contest_dir, letter, tests, solution_template):
-    test_directory = path.path(contest_dir) / tests_dir / letter
+    test_directory = path.Path(contest_dir) / tests_dir / letter
     if test_directory.exists():
-        print("Tests for %s already exist, skip" % letter)
+        print(("Tests for %s already exist, skip" % letter))
     else:
         test_directory.makedirs()
 
@@ -125,7 +127,7 @@ def save(contest_dir, letter, tests, solution_template):
 
     solution_fpath = contest_dir / (letter + ".cpp")
     if solution_fpath.exists():
-        print("Solution file for %s already exist, skip" % letter)
+        print(("Solution file for %s already exist, skip" % letter))
     else:
         with open(solution_fpath, "w") as stream:
             stream.write(solution_template.replace("$$PROBLEM_LETTER$$", letter))
@@ -140,7 +142,6 @@ def extract_letter(problem):
 
 
 def main(contest, base_dir, force):
-    settings.configure()
 
     if contest is not None:
         contest_id = get_contest_from_arg(contest)
@@ -151,11 +152,11 @@ def main(contest, base_dir, force):
     problems = get_problems(contest_id)
     problem_letters = [x.split("/")[-1] for x in problems]
 
-    script_dir = path.path(__file__).dirname().abspath()
+    script_dir = path.Path(__file__).dirname().abspath()
     contest_slug = contest_id.strip("/").replace("/", "_")
-    contest_dir = path.path(base_dir) / contest_slug
+    contest_dir = path.Path(base_dir) / contest_slug
     contest_dir.makedirs_p()
-    print "Saving to", contest_dir
+    print("Saving to", contest_dir)
 
     with open(script_dir / "template.cpp") as stream:
         solution_template = stream.read()
@@ -163,26 +164,19 @@ def main(contest, base_dir, force):
     for problem in problems:
         try:
             tests = download_problem(problem)
-        except Exception, e:
-            print "Exception (%s) raised during test downloding for problem '%s'" % (e, problem)
+        except Exception as e:
+            print("Exception (%s) raised during test downloding for problem '%s'" % (e, problem))
             if force:
-                print "Going to use empty tests"
+                print("Going to use empty tests")
                 tests = []
             else:
-                print "Exiting. Use --force to ignore errors"
+                print("Exiting. Use --force to ignore errors")
                 return
 
         save(contest_dir, extract_letter(problem), tests, solution_template)
 
-    for qtfile in (script_dir / "qtcreator").glob("CONTEST*"):
-        copy_substitute(
-            qtfile,
-            contest_dir / qtfile.basename().replace("CONTEST", contest_slug),
-            root_dir=contest_dir,
-            targets=problem_letters,
-        )
-
     for aux_file in "Makefile", "tester.cpp", "custom_tests.cpp":
+        print(aux_file)
         copy_substitute(
             script_dir / aux_file,
             contest_dir,
@@ -190,10 +184,9 @@ def main(contest, base_dir, force):
             PROBLEM_LETTERS=" ".join(problem_letters),
         )
 
-    print
-    print "ALL DONE"
-    print "Run to open qtcreator:"
-    print "cd %s && qtcreator %s.creator" % (contest_dir, contest_slug)
+    print()
+    print("ALL DONE")
+    print("cd %s" % contest_dir)
 
 
 if __name__ == '__main__':
@@ -206,7 +199,7 @@ if __name__ == '__main__':
         help="ignore any exception occured during test downloading")
     parser.add_argument(
         "--base-dir",
-        default=str(path.path(__file__).dirname().abspath().parent / "contests"),
+        default=os.path.realpath(os.path.dirname(__file__)) + '/../contests',
         help="path to dir with contests (default: %(default)s)")
     parser.add_argument(
         'contest',

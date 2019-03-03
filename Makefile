@@ -1,6 +1,6 @@
 CPPFLAGS=-std=c++11 -g -Wall
 
-all: {{ targets|join:" " }}
+all: {{ targets|join(" ") }}
 
 tester.o: tester.cpp
 	g++ -c $(CPPFLAGS) $^ -o $@
@@ -15,6 +15,6 @@ custom_tests.o: custom_tests.cpp
 	g++ -pipe $(CPPFLAGS) $^ -o $@
 
 clean:
-	rm {{ targets|join:" " }} *.o
+	rm {{ targets|join(" ") }} *.o
 
 
