@@ -77,7 +77,7 @@ def html2plaintext(tag):
                 result += '\n'
             else:
                 raise Exception('unknown tag inside test case found: ' + c.name)
-    return result
+    return result.lstrip()
 
 
 def replace_html_specials(s):
