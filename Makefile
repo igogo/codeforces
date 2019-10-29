@@ -1,19 +1,20 @@
+CPPFLAGS=-std=c++11 -g -Wall
 
-all: A B C D E F
+all: {{ targets|join(" ") }}
 
 tester.o: tester.cpp
-	g++ -c -std=c++11 -g -O2 $^ -o $@
+	g++ -c $(CPPFLAGS) $^ -o $@
 
 custom_tests.o: custom_tests.cpp
-	g++ -c -std=c++11 -g -O2 $^ -o $@
+	g++ -c $(CPPFLAGS) $^ -o $@
 
 %: %.cpp tester.o custom_tests.o
-	g++ -pipe -std=c++11 -g $^ -o $@
+	g++ -pipe $(CPPFLAGS) $^ -o $@
 
 %o: %.cpp tester.o custom_tests.o
-	g++ -pipe -std=c++11 -O3 -g $^ -o $@
+	g++ -pipe $(CPPFLAGS) $^ -o $@
 
 clean:
-	rm A B C D E F *.o
+	rm {{ targets|join(" ") }} *.o
 
 

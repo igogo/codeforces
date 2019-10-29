@@ -1,5 +1,6 @@
 #include <dirent.h>
 #include <cstdio>
+#include <ctime>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -78,7 +79,7 @@ vector<string> get_head(string file, int maxnlines)
     return result;
 }
 
-void run(void (*solve)(), string ipath, string tempopath, string opath)
+void run(void (*solve)(), string ipath, string tempopath, string opath, double* elapsed_ms)
 {
     cin.clear();
     cout.clear();
@@ -87,21 +88,26 @@ void run(void (*solve)(), string ipath, string tempopath, string opath)
     if (freopen(tempopath.c_str(), "w", stdout) == NULL)
         cerr << "!! ERROR REOPENING tempopath \n";
 
+    clock_t c_start = std::clock();
     solve();
+    clock_t c_end = std::clock();
+    *elapsed_ms = 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC;
 
     freopen("/dev/tty", "a", stdout);
     freopen("/dev/tty", "r", stdin);
 }
 
-void diff_files(int tstnum, string ipath, string tempopath, string opath)
+void diff_files(int tstnum, string ipath, string tempopath, string opath, double elapsed_ms)
 {
     int diff_result = call_diff(opath, tempopath);
     if (diff_result == 0) {
         cerr << "Test " << tstnum << "  OK\n";
+        cerr << "Elapsed: " << elapsed_ms << "ms\n";
     }
     else {
         cerr << "\n";
         cerr << "Test " << tstnum << "  FAILED\n";
+        cerr << "Elapsed: " << elapsed_ms << "ms\n";
         cerr << "Input:\n";
         vector<string> ihead = get_head(ipath, 30);
         for (int i = 0; i < ihead.size(); i++)
@@ -124,8 +130,9 @@ void test_file(void (*solve)(), string problem, string file)
     string opath = path + file.replace(0, 1, "o");
     string tempopath = string(tests_dir) + "output.txt";
 
-    run(solve, ipath, tempopath, opath);
-    diff_files(atoi(file.substr(1).c_str()), ipath, tempopath, opath);
+    double elapsed_ms;
+    run(solve, ipath, tempopath, opath, &elapsed_ms);
+    diff_files(atoi(file.substr(1).c_str()), ipath, tempopath, opath, elapsed_ms);
 }
 
 void test_custom(void (*solve)(), int tstnum, string input, string output)
@@ -142,8 +149,9 @@ void test_custom(void (*solve)(), int tstnum, string input, string output)
     genrightans << output;
     genrightans.close();
 
-    run(solve, ipath, tempopath, opath);
-    diff_files(tstnum, ipath, tempopath, opath);
+    double elapsed_ms;
+    run(solve, ipath, tempopath, opath, &elapsed_ms);
+    diff_files(tstnum, ipath, tempopath, opath, elapsed_ms);
 }
 
 vector<pair<string, string> > get_custom_tests(string problem);

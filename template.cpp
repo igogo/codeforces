@@ -1,19 +1,25 @@
-#include <vector>
-#include <string>
-#include <set>
-#include <algorithm>
-#include <sstream>
 #include <iostream>
-#include <map>
-#include <cstring>
-#include <climits>
-#include <deque>
-#include <cmath>
 #include <cstdio>
-#include <limits>
-#include <tuple>
-#include <array>
+#include <cstdlib>
+#include <algorithm>
+#include <cmath>
+#include <vector>
+#include <set>
+#include <map>
+#include <unordered_set>
+#include <unordered_map>
 #include <queue>
+#include <ctime>
+#include <cassert>
+#include <complex>
+#include <string>
+#include <cstring>
+#include <chrono>
+#include <random>
+#include <queue>
+#include <bitset>
+
+// ############ TASK $$PROBLEM_LETTER$$ ##################
 
 using namespace std;
 
@@ -28,20 +34,22 @@ typedef long long ll;
 #define all(v) (v).begin(), (v).end()
 #define REP(i,n) for(int (i) = 0; (i) < (n); (i)++)
 #define FOR(i, st, en) for(int i=(st); i<(int)(en); i++)
+#define CR(value) { cout << value << endl; return; }
+#define RV(v) FV(i,v) cin >> v[i];
+#define DRV(v, n) vi (v)(n); RV((v));
 
-void do_nothing() {}
+ll modulo(ll x, ll y) {
+    return ((x % y) + y) % y;
+}
 
-void solve()
-{
+void solve() {
 }
 
 
 
-
-
 #ifdef ONLINE_JUDGE
-int main() { solve(); return 0; }
+int main() { ios_base::sync_with_stdio(0); solve(); return 0; }
 #else
 void perform_testing(void (*solve)(), string problem, int itest);
-int main() { perform_testing(solve, "$$PROBLEM$$", -1); return 0; }
+int main() { perform_testing(solve, "$$PROBLEM_LETTER$$", -1); return 0; }
 #endif // ONLINE_JUDGE
